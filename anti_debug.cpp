@@ -15,6 +15,8 @@ const auto kNtCurrentThread = reinterpret_cast<HANDLE>(-2);
 
 #if (!defined(_DEBUG) && defined(ANTI_DEBUG_RELEASE)) || \
     (defined(_DEBUG) && defined(ANTI_DEBUG_DEBUG))
+// Add tls-callback that will be run before main(). 
+// He will run anti-debug code and disable the debugger.
 #pragma comment (linker, "/INCLUDE:_tls_used")
 #pragma comment (linker, "/INCLUDE:antiDbgTlsCallback")
 #pragma const_seg(".CRT$XLF")
