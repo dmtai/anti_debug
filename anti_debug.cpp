@@ -4,10 +4,15 @@ namespace anti_debug {
 
 bool CheckDebuggerPresent();
 void HideThreadFromDebugger();
-namespace { void NTAPI OnThreadStart(PVOID module, DWORD reason, PVOID reserved); }
+
+namespace { 
+
+void NTAPI OnThreadStart(PVOID module, DWORD reason, PVOID reserved); 
 
 constexpr int kThreadHideFromDebugger{ 0x11 };
 constexpr int kNtCurrentThread{ -2 };
+
+} // namespace
 
 // If macro ANTI_DEBUG_RELEASE defined, anti-debug will be enabled 
 // in project release mode.
