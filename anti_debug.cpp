@@ -7,16 +7,17 @@ void HideThreadFromDebugger();
 namespace { void NTAPI OnThreadStart(PVOID module, DWORD reason, PVOID reserved); }
 
 constexpr int kThreadHideFromDebugger{ 0x11 };
-const auto kNtCurrentThread = reinterpret_cast<HANDLE>(-2);
+constexpr int kNtCurrentThread{ -2 };
 
-// If macro ANTI_DEBUG_RELEASE defined, anti-debug will be enabled in release mode.
-// If macro ANTI_DEBUG_DEBUG defined, anti-debug will be enabled in debug mode.
+// If macro ANTI_DEBUG_RELEASE defined, anti-debug will be enabled 
+// in project release mode.
+// If macro ANTI_DEBUG_DEBUG defined, anti-debug will be enabled 
+// in project debug mode.
 #define ANTI_DEBUG_RELEASE
 
 #if (!defined(_DEBUG) && defined(ANTI_DEBUG_RELEASE)) || \
     (defined(_DEBUG) && defined(ANTI_DEBUG_DEBUG))
-// Add tls-callback that will be run before main(). 
-// He will run anti-debug code and disable the debugger.
+// Add anti-debug tls-callback that will be run before main(). 
 #pragma comment (linker, "/INCLUDE:_tls_used")
 #pragma comment (linker, "/INCLUDE:antiDbgTlsCallback")
 #pragma const_seg(".CRT$XLF")
@@ -31,11 +32,11 @@ void NTAPI OnThreadStart(PVOID module, DWORD reason, PVOID reserved) {
     return;
   }
   // Disable sending debug messages by all threads.
-  // This won't allow the debugger to work correctly
+  // This won't allow a debugger to work correctly
   // throughout all the life of the process.
   HideThreadFromDebugger();
 
-  // Exit the process if the program was started from debugger.
+  // Exit the process if the program is running under a debugger
   if (CheckDebuggerPresent()) {
     TerminateProcess(GetCurrentProcess(), EXIT_FAILURE);
   }
@@ -54,8 +55,9 @@ void HideThreadFromDebugger() {
   if (!NtSetInformationThread) {
     return;
   }
-  // Hide thread from the debugger.
-  NtSetInformationThread(kNtCurrentThread, kThreadHideFromDebugger, 0, 0);
+  // Hide thread from a debugger.
+  NtSetInformationThread(reinterpret_cast<HANDLE>(kNtCurrentThread), 
+                         kThreadHideFromDebugger, 0, 0);
 }
 
 bool CheckDebuggerPresent() {
